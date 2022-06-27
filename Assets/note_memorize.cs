@@ -66,17 +66,20 @@ public class note_memorize : MonoBehaviour {
 
 
     void Awake() {
-        // Setup Window
+    // Setup Window Initial State and Populate Default Information
+        // Window
         PanelTitleText.text = "Fretboard Trainer";
         HeaderText.text = "Memorize the Notes of the Guitar";
         DescriptionText.text = "Click the note on the corresponding string to see if you gussed right or wrong, learn all natural notes one string at a time before moving on to another string, then mutiple strings, then finally all strings with sharps and flats.";
 
+        // Score
         ScoreRight.text = CorrectAnswers + " : RIGHT";
         ScoreWrong.text = WrongAnswers + " : WRONG";
 
         CorrectAnswers = 0;
         WrongAnswers = 0;
 
+        // Global Variables
         audio = GetComponent<AudioSource>();
 
         gameStarted = false;
@@ -92,37 +95,43 @@ public class note_memorize : MonoBehaviour {
 
 
 
-    // Clears the text on fretboard buttons, attaches
+    // Clears Fretboard Button Labels, Attaches onClick Listeners
     void SetupFretboardButtons_() {
+        // If Game Not Started
         if (!gameStarted) {
+
+            // Loop Through All Fretboard Buttons
             for (int i=0; i < FretButtons.Length; i++) {
                 Button TheButton = FretButtons[i];
                 
-                //Get button Text object
+                // Get Button Text Object
                 Text buttonText = TheButton.GetComponentInChildren(typeof(Text)) as Text;
 
-                //Attach event handler
+                // Attach Event Handler
                 TheButton.onClick.AddListener(() => CheckFretButtonName(TheButton)); 
 
-                //Set text labels to blank
+                // Set Text Labels to Blank
                 buttonText.text = "";
             }
         }
         
     }
 
+    // Verifies Note Selection on Button Click and Handles Win/Lose Case
     void CheckFretButtonName(Button button) {
+        // If Game Started
         if (gameStarted) {
             
-            // Correct Note
+            // Check Button Name Against Random Selection
             if (button.name == shuffleBag[RandomString][RandomNote]) {
 
-                //Correct String
+                // Correct Guitar String
                 if (int.Parse(button.transform.parent.name) == testStringIndex) {
                     
+                    //Correct Note
                     StartCoroutine(CorrectGuess_(button));
                     
-                // Wrong String
+                // Wrong Guitar String
                 } else {
                     StartCoroutine(WrongGuess_(button, "string"));
                 }
@@ -133,6 +142,7 @@ public class note_memorize : MonoBehaviour {
             }
         }
     }
+
 
     void GenerateRandomFret_() {
         //Count Total Toggles Enabled
@@ -165,9 +175,9 @@ public class note_memorize : MonoBehaviour {
             } else if (shuffleBag[RandomString][0] == "E") {
                 testStringIndex = 1;
             } else if (shuffleBag[RandomString][0] == "A") {
-                testStringIndex = 3;
+                testStringIndex = 2;
             } else if (shuffleBag[RandomString][0] == "D") {
-                testStringIndex = 4;
+                testStringIndex = 3;
             }
 
             PromptText.text = "FIND THE " + shuffleBag[RandomString][RandomNote] + " FRET ON STRING " + GuitarStrings[testStringIndex] + ".";
@@ -183,31 +193,36 @@ public class note_memorize : MonoBehaviour {
     }
 
 
-
+    // Handle Correct Guess
     IEnumerator CorrectGuess_(Button button) {
+    // Set Global Variables
         PromptText.text = "CORRECT!";
         CorrectAnswers++;
         ScoreRight.text = CorrectAnswers + " : RIGHT";
-
+    
+    // Button Color and Name
         button.GetComponent<Image>().color = Color.green;
 
         Text buttonText = button.GetComponentInChildren(typeof(Text)) as Text;
         buttonText.text = button.name;
-        //shuffleBag[RandomString][RandomNote]
 
+    // Audio
         audio.clip = rightClip;
         audio.Play();
 
+    // Delay
         yield return new WaitForSeconds(2.5f);
-
+    
+    // Reset Button
         button.GetComponent<Image>().color = Color.white;
         buttonText.text = "";
-        
+    
+    // Generate Random
         GenerateRandomFret_();
     }
 
     IEnumerator WrongGuess_(Button button, string failType) {
-       
+    // Handle Fail Type
         if (failType == "string") {
             PromptText.text = "THAT'S THE RIGHT NOTE... BUT THE WRONG STRING!";
 
@@ -215,22 +230,28 @@ public class note_memorize : MonoBehaviour {
             PromptText.text = "WRONG NOTE!";
         }
 
+    // Set Global Variables
         WrongAnswers++;
         ScoreWrong.text = WrongAnswers + " : WRONG";
 
+    // Button Color and Name
         button.GetComponent<Image>().color = Color.red;
 
         Text buttonText = button.GetComponentInChildren(typeof(Text)) as Text;
         buttonText.text = button.name;
-        
+
+    // Audio
         audio.clip = wrongClip;
         audio.Play();
 
+    // Delay
         yield return new WaitForSeconds(2.5f);
 
+    // Reset Button
         button.GetComponent<Image>().color = Color.white;
         buttonText.text = "";
-
+    
+    // Generate Random
         GenerateRandomFret_();
     }
 }
